@@ -1,0 +1,457 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MovieMatch - Get Personalized Movie Recommendations</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 3em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .header p {
+            font-size: 1.2em;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 30px;
+            margin-bottom: 40px;
+        }
+
+        .section {
+            background: rgba(255, 255, 255, 0.95);
+            padding: 30px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+            backdrop-filter: blur(10px);
+        }
+
+        .section h2 {
+            color: #4a5568;
+            margin-bottom: 20px;
+            font-size: 1.5em;
+        }
+
+        .movie-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .movie-input input {
+            flex: 1;
+            padding: 12px;
+            border: 2px solid #e2e8f0;
+            border-radius: 10px;
+            font-size: 1em;
+            transition: border-color 0.3s;
+        }
+
+        .movie-input input:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 20px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1em;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
+        }
+
+        .movie-list {
+            max-height: 300px;
+            overflow-y: auto;
+            margin-bottom: 20px;
+        }
+
+        .movie-item {
+            background: #f7fafc;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 10px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            animation: slideIn 0.3s ease-out;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateX(-20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateX(0);
+            }
+        }
+
+        .movie-info h3 {
+            color: #2d3748;
+            margin-bottom: 5px;
+        }
+
+        .movie-info p {
+            color: #718096;
+            font-size: 0.9em;
+        }
+
+        .remove-btn {
+            background: #e53e3e;
+            color: white;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.8em;
+        }
+
+        .remove-btn:hover {
+            background: #c53030;
+        }
+
+        .recommendations {
+            grid-column: 1 / -1;
+        }
+
+        .rec-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .rec-card {
+            background: linear-gradient(135deg, #f093fb 0%, #f5576c 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 15px;
+            text-align: center;
+            transform: scale(0.95);
+            animation: popIn 0.5s ease-out forwards;
+        }
+
+        @keyframes popIn {
+            to {
+                transform: scale(1);
+            }
+        }
+
+        .rec-card h3 {
+            font-size: 1.3em;
+            margin-bottom: 10px;
+        }
+
+        .rec-card p {
+            opacity: 0.9;
+            line-height: 1.4;
+            margin-bottom: 10px;
+        }
+
+        .genre-tag {
+            background: rgba(255,255,255,0.2);
+            padding: 4px 8px;
+            border-radius: 15px;
+            font-size: 0.8em;
+            margin: 2px;
+            display: inline-block;
+        }
+
+        .no-movies {
+            text-align: center;
+            color: #718096;
+            font-style: italic;
+            padding: 40px;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .header h1 {
+                font-size: 2em;
+            }
+            
+            .movie-input {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🎬 MovieMatch</h1>
+            <p>Discover your next favorite movie based on what you love</p>
+        </div>
+
+        <div class="main-content">
+            <div class="section">
+                <h2>Movies You've Enjoyed</h2>
+                <div class="movie-input">
+                    <input type="text" id="movieInput" placeholder="Enter a movie you liked..." />
+                    <button class="btn" onclick="addMovie()">Add Movie</button>
+                </div>
+                <div class="movie-list" id="movieList">
+                    <div class="no-movies">Add some movies you've enjoyed to get started!</div>
+                </div>
+                <button class="btn" onclick="getRecommendations()" style="width: 100%;">Get Recommendations</button>
+            </div>
+
+            <div class="section">
+                <h2>Quick Add Popular Movies</h2>
+                <p style="margin-bottom: 15px; color: #718096;">Click to add movies you've enjoyed:</p>
+                <div id="popularMovies"></div>
+            </div>
+        </div>
+
+        <div class="section recommendations" id="recommendationsSection" style="display: none;">
+            <h2>🌟 Recommended Movies For You</h2>
+            <div class="rec-grid" id="recommendationsList"></div>
+        </div>
+    </div>
+
+    <script>
+        // Movie database with genres and similar movies
+        const movieDatabase = {
+            "The Shawshank Redemption": {
+                genres: ["Drama", "Crime"],
+                year: 1994,
+                description: "Hope and friendship in the darkest places"
+            },
+            "The Dark Knight": {
+                genres: ["Action", "Crime", "Drama"],
+                year: 2008,
+                description: "The ultimate battle between good and evil"
+            },
+            "Inception": {
+                genres: ["Action", "Sci-Fi", "Thriller"],
+                year: 2010,
+                description: "Dreams within dreams in a mind-bending thriller"
+            },
+            "Pulp Fiction": {
+                genres: ["Crime", "Drama"],
+                year: 1994,
+                description: "Interconnected stories of crime and redemption"
+            },
+            "The Matrix": {
+                genres: ["Action", "Sci-Fi"],
+                year: 1999,
+                description: "Reality is not what it seems"
+            },
+            "Goodfellas": {
+                genres: ["Crime", "Drama"],
+                year: 1990,
+                description: "The rise and fall of a mobster"
+            },
+            "Forrest Gump": {
+                genres: ["Drama", "Romance"],
+                year: 1994,
+                description: "Life is like a box of chocolates"
+            },
+            "The Godfather": {
+                genres: ["Crime", "Drama"],
+                year: 1972,
+                description: "The saga of a crime family dynasty"
+            },
+            "Interstellar": {
+                genres: ["Sci-Fi", "Drama"],
+                year: 2014,
+                description: "Love transcends space and time"
+            },
+            "Parasite": {
+                genres: ["Thriller", "Drama"],
+                year: 2019,
+                description: "A darkly comic thriller about class conflict"
+            }
+        };
+
+        // Recommendation database based on genres and similar themes
+        const recommendations = {
+            "Action": ["Mad Max: Fury Road", "John Wick", "Mission: Impossible", "The Raid"],
+            "Sci-Fi": ["Blade Runner 2049", "Ex Machina", "Arrival", "Her"],
+            "Crime": ["Heat", "Casino", "The Departed", "Scarface"],
+            "Drama": ["Manchester by the Sea", "Moonlight", "There Will Be Blood", "The Social Network"],
+            "Thriller": ["Gone Girl", "Zodiac", "No Country for Old Men", "Shutter Island"],
+            "Romance": ["Eternal Sunshine of the Spotless Mind", "Her", "Before Sunset", "The Princess Bride"]
+        };
+
+        let userMovies = [];
+
+        function addMovie(movieTitle = null) {
+            const input = document.getElementById('movieInput');
+            const movie = movieTitle || input.value.trim();
+            
+            if (movie && !userMovies.includes(movie)) {
+                userMovies.push(movie);
+                updateMovieList();
+                if (!movieTitle) input.value = '';
+            }
+        }
+
+        function removeMovie(movie) {
+            userMovies = userMovies.filter(m => m !== movie);
+            updateMovieList();
+        }
+
+        function updateMovieList() {
+            const listEl = document.getElementById('movieList');
+            
+            if (userMovies.length === 0) {
+                listEl.innerHTML = '<div class="no-movies">Add some movies you\'ve enjoyed to get started!</div>';
+                return;
+            }
+
+            listEl.innerHTML = userMovies.map(movie => {
+                const movieInfo = movieDatabase[movie];
+                return `
+                    <div class="movie-item">
+                        <div class="movie-info">
+                            <h3>${movie}</h3>
+                            ${movieInfo ? `<p>${movieInfo.year} • ${movieInfo.genres.join(', ')}</p>` : ''}
+                        </div>
+                        <button class="remove-btn" onclick="removeMovie('${movie}')">Remove</button>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getRecommendations() {
+            if (userMovies.length === 0) {
+                alert('Please add at least one movie first!');
+                return;
+            }
+
+            // Analyze user preferences
+            const genreCount = {};
+            userMovies.forEach(movie => {
+                const movieInfo = movieDatabase[movie];
+                if (movieInfo) {
+                    movieInfo.genres.forEach(genre => {
+                        genreCount[genre] = (genreCount[genre] || 0) + 1;
+                    });
+                }
+            });
+
+            // Get top genres
+            const topGenres = Object.entries(genreCount)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 3)
+                .map(([genre]) => genre);
+
+            // Generate recommendations
+            const recs = new Set();
+            topGenres.forEach(genre => {
+                if (recommendations[genre]) {
+                    recommendations[genre].forEach(movie => {
+                        if (!userMovies.includes(movie)) {
+                            recs.add({
+                                title: movie,
+                                reason: `Because you like ${genre} movies`,
+                                genres: [genre]
+                            });
+                        }
+                    });
+                }
+            });
+
+            // Additional curated recommendations based on specific movies
+            const specificRecs = [
+                { title: "Dune", reason: "Epic sci-fi adventure", genres: ["Sci-Fi", "Adventure"] },
+                { title: "The Grand Budapest Hotel", reason: "Quirky and visually stunning", genres: ["Comedy", "Drama"] },
+                { title: "Knives Out", reason: "Modern mystery masterpiece", genres: ["Mystery", "Comedy"] },
+                { title: "1917", reason: "Intense war drama", genres: ["War", "Drama"] },
+                { title: "Everything Everywhere All at Once", reason: "Mind-bending multiverse adventure", genres: ["Sci-Fi", "Comedy"] }
+            ];
+
+            specificRecs.forEach(rec => {
+                if (!userMovies.includes(rec.title)) {
+                    recs.add(rec);
+                }
+            });
+
+            displayRecommendations(Array.from(recs).slice(0, 6));
+        }
+
+        function displayRecommendations(recs) {
+            const section = document.getElementById('recommendationsSection');
+            const list = document.getElementById('recommendationsList');
+            
+            list.innerHTML = recs.map(rec => `
+                <div class="rec-card">
+                    <h3>${rec.title}</h3>
+                    <p>${rec.reason}</p>
+                    <div>
+                        ${rec.genres.map(genre => `<span class="genre-tag">${genre}</span>`).join('')}
+                    </div>
+                </div>
+            `).join('');
+            
+            section.style.display = 'block';
+            section.scrollIntoView({ behavior: 'smooth' });
+        }
+
+        function initializePopularMovies() {
+            const popularEl = document.getElementById('popularMovies');
+            const popular = Object.keys(movieDatabase).slice(0, 8);
+            
+            popularEl.innerHTML = popular.map(movie => `
+                <button class="btn" onclick="addMovie('${movie}')" style="margin: 5px; padding: 8px 12px; font-size: 0.9em;">
+                    ${movie}
+                </button>
+            `).join('');
+        }
+
+        // Allow Enter key to add movies
+        document.getElementById('movieInput').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                addMovie();
+            }
+        });
+
+        // Initialize the app
+        initializePopularMovies();
+    </script>
+</body>
+</html>
