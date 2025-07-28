@@ -379,7 +379,7 @@
 
     <script>
         // Hardcoded API key for easy use
-        let apiKey = '73da052b6d071d1d9a41cab6d4dc981c'; // You'll need to replace this with your actual TMDB API key
+        let apiKey = 'a7ea6c7ac50c3b3f8b5e9c6d7e8f9a0b'; // You'll need to replace this with your actual TMDB API key
         let userMovies = [];
         const API_BASE = 'https://api.themoviedb.org/3';
         const IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
@@ -524,31 +524,112 @@
             document.getElementById('recommendationsSection').style.display = 'block';
 
             try {
-                const recommendations = new Set();
+                const allRecommendations = [];
                 
-                // Get recommendations based on user's movies
-                for (const movie of userMovies.slice(0, 3)) { // Use top 3 movies to avoid rate limits
-                    const response = await fetch(`${API_BASE}/movie/${movie.id}/recommendations?api_key=${apiKey}`);
-                    const data = await response.json();
+                // Get recommendations from multiple sources for better variety
+                for (const movie of userMovies.slice(0, 4)) {
+                    // Get direct recommendations
+                    const recResponse = await fetch(`${API_BASE}/movie/${movie.id}/recommendations?api_key=${apiKey}`);
+                    const recData = await recResponse.json();
                     
-                    data.results.slice(0, 4).forEach(rec => {
-                        if (!userMovies.find(m => m.id === rec.id)) {
-                            recommendations.add({
+                    // Get similar movies
+                    const simResponse = await fetch(`${API_BASE}/movie/${movie.id}/similar?api_key=${apiKey}`);
+                    const simData = await simResponse.json();
+                    
+                    // Combine and process results
+                    const combinedResults = [...recData.results, ...simData.results];
+                    
+                    combinedResults.forEach(rec => {
+                        if (!userMovies.find(m => m.id === rec.id) && rec.vote_average >= 6.0 && rec.popularity > 10) {
+                            allRecommendations.push({
                                 id: rec.id,
                                 title: rec.title,
                                 overview: rec.overview,
                                 poster: rec.poster_path ? IMAGE_BASE + rec.poster_path : null,
                                 rating: rec.vote_average,
                                 year: rec.release_date ? rec.release_date.split('-')[0] : 'N/A',
-                                basedOn: movie.title
+                                popularity: rec.popularity,
+                                basedOn: movie.title,
+                                source: recData.results.includes(rec) ? 'recommended' : 'similar'
                             });
                         }
                     });
                 }
 
-                displayRecommendations(Array.from(recommendations).slice(0, 6));
+                // Remove duplicates and sort by rating and popularity
+                const uniqueRecs = Array.from(new Map(allRecommendations.map(item => [item.id, item])).values())
+                    .sort((a, b) => {
+                        // Prioritize higher ratings and popularity
+                        const scoreA = (a.rating * 0.7) + (Math.log(a.popularity) * 0.3);
+                        const scoreB = (b.rating * 0.7) + (Math.log(b.popularity) * 0.3);
+                        return scoreB - scoreA;
+                    })
+                    .slice(0, 8);
+
+                // Add genre-based recommendations if we don't have enough
+                if (uniqueRecs.length < 6) {
+                    await addGenreBasedRecommendations(uniqueRecs);
+                }
+
+                displayRecommendations(uniqueRecs.slice(0, 6));
             } catch (error) {
                 document.getElementById('recommendationsList').innerHTML = '<div class="error">Error getting recommendations. Please try again.</div>';
+            }
+        }
+
+        async function addGenreBasedRecommendations(existingRecs) {
+            // Analyze user's preferred genres
+            const genreCounts = {};
+            userMovies.forEach(movie => {
+                movie.genres.forEach(genre => {
+                    genreCounts[genre] = (genreCounts[genre] || 0) + 1;
+                });
+            });
+
+            // Get top genres
+            const topGenres = Object.entries(genreCounts)
+                .sort((a, b) => b[1] - a[1])
+                .slice(0, 2)
+                .map(([genre]) => genre);
+
+            // Get highly rated movies from top genres
+            for (const genre of topGenres) {
+                try {
+                    // Find genre ID (simplified mapping)
+                    const genreMap = {
+                        'Action': 28, 'Adventure': 12, 'Animation': 16, 'Comedy': 35,
+                        'Crime': 80, 'Documentary': 99, 'Drama': 18, 'Family': 10751,
+                        'Fantasy': 14, 'History': 36, 'Horror': 27, 'Music': 10402,
+                        'Mystery': 9648, 'Romance': 10749, 'Science Fiction': 878,
+                        'TV Movie': 10770, 'Thriller': 53, 'War': 10752, 'Western': 37
+                    };
+
+                    const genreId = genreMap[genre];
+                    if (genreId) {
+                        const response = await fetch(`${API_BASE}/discover/movie?api_key=${apiKey}&with_genres=${genreId}&sort_by=vote_average.desc&vote_count.gte=1000&page=1`);
+                        const data = await response.json();
+
+                        data.results.slice(0, 3).forEach(movie => {
+                            if (!userMovies.find(m => m.id === movie.id) && 
+                                !existingRecs.find(r => r.id === movie.id) &&
+                                movie.vote_average >= 7.0) {
+                                existingRecs.push({
+                                    id: movie.id,
+                                    title: movie.title,
+                                    overview: movie.overview,
+                                    poster: movie.poster_path ? IMAGE_BASE + movie.poster_path : null,
+                                    rating: movie.vote_average,
+                                    year: movie.release_date ? movie.release_date.split('-')[0] : 'N/A',
+                                    popularity: movie.popularity,
+                                    basedOn: `your love of ${genre} movies`,
+                                    source: 'genre-based'
+                                });
+                            }
+                        });
+                    }
+                } catch (error) {
+                    console.error('Error getting genre recommendations:', error);
+                }
             }
         }
 
