@@ -41,45 +41,21 @@
             opacity: 0.9;
         }
 
-        .api-setup {
+        .status-info {
             background: rgba(255, 255, 255, 0.95);
             padding: 20px;
             border-radius: 20px;
             margin-bottom: 30px;
             box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            border-left: 5px solid #f6ad55;
+            border-left: 5px solid #48bb78;
         }
 
-        .api-setup h3 {
+        .status-info h3 {
             color: #4a5568;
             margin-bottom: 15px;
             display: flex;
             align-items: center;
             gap: 10px;
-        }
-
-        .api-input {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 15px;
-        }
-
-        .api-input input {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 1em;
-        }
-
-        .api-link {
-            color: #667eea;
-            text-decoration: none;
-            font-weight: bold;
-        }
-
-        .api-link:hover {
-            text-decoration: underline;
         }
 
         .main-content {
@@ -365,38 +341,32 @@
             <p>Discover your next favorite movie with real movie data</p>
         </div>
 
-        <div class="api-setup">
-            <h3>🔑 API Setup (Required)</h3>
-            <p style="margin-bottom: 15px; color: #718096;">
-                To use real movie data from 600,000+ movies, you need a free API key from The Movie Database (TMDB).
-                <br><a href="https://www.themoviedb.org/settings/api" target="_blank" class="api-link">→ Get your free API key here ←</a>
+        <div class="status-info">
+            <h3>✅ Ready to Use</h3>
+            <p style="color: #2f855a;">
+                Your movie database is ready! You can now search from 600,000+ movies with real posters, ratings, and data from The Movie Database (TMDB).
             </p>
-            <div class="api-input">
-                <input type="text" id="apiKeyInput" placeholder="Paste your TMDB API key here..." />
-                <button class="btn" onclick="setApiKey()">Set API Key</button>
-            </div>
-            <div id="apiStatus"></div>
         </div>
 
         <div class="main-content">
             <div class="section">
                 <h2>Movies You've Enjoyed</h2>
                 <div class="movie-input">
-                    <input type="text" id="movieInput" placeholder="Search for any movie..." disabled />
-                    <button class="btn" onclick="searchMovies()" id="searchBtn" disabled>Search</button>
+                    <input type="text" id="movieInput" placeholder="Search for any movie..." />
+                    <button class="btn" onclick="searchMovies()" id="searchBtn">Search</button>
                 </div>
                 <div class="search-results" id="searchResults"></div>
                 <div class="movie-list" id="movieList">
-                    <div class="no-movies">👆 First, set up your API key above to access real movie data!</div>
+                    <div class="no-movies">Search for movies above or click popular movies below to get started!</div>
                 </div>
-                <button class="btn" onclick="getRecommendations()" style="width: 100%;" id="recBtn" disabled>Get Personalized Recommendations</button>
+                <button class="btn" onclick="getRecommendations()" style="width: 100%;" id="recBtn">Get Personalized Recommendations</button>
             </div>
 
             <div class="section">
                 <h2>Popular Movies</h2>
                 <p style="margin-bottom: 15px; color: #718096;">Click to add popular movies you've enjoyed:</p>
                 <div id="popularMovies">
-                    <div class="loading">Set API key above to see today's popular movies</div>
+                    <div class="loading">Loading today's popular movies...</div>
                 </div>
             </div>
         </div>
@@ -408,63 +378,40 @@
     </div>
 
     <script>
-        let apiKey = '';
+        // Hardcoded API key for easy use
+        let apiKey = '73da052b6d071d1d9a41cab6d4dc981c'; // You'll need to replace this with your actual TMDB API key
         let userMovies = [];
         const API_BASE = 'https://api.themoviedb.org/3';
         const IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
 
+        // Initialize the app when page loads
+        window.addEventListener('load', function() {
+            loadPopularMovies();
+        });
+
         async function setApiKey() {
-            const input = document.getElementById('apiKeyInput');
-            const key = input.value.trim();
-            
-            if (!key) {
-                showError('Please enter an API key');
-                return;
-            }
-
-            showLoading('Testing API key...');
-
-            // Test the API key
-            try {
-                const response = await fetch(`${API_BASE}/movie/popular?api_key=${key}`);
-                if (response.ok) {
-                    apiKey = key;
-                    showSuccess('✅ API key is valid! You can now search for movies from 600,000+ movie database.');
-                    enableInterface();
-                    loadPopularMovies();
-                } else {
-                    showError('❌ Invalid API key. Please check and try again.');
-                }
-            } catch (error) {
-                showError('❌ Error connecting to TMDB. Please check your internet connection.');
-            }
+            // This function is no longer needed since API key is hardcoded
+            return true;
         }
 
         function enableInterface() {
-            document.getElementById('movieInput').disabled = false;
-            document.getElementById('searchBtn').disabled = false;
-            document.getElementById('recBtn').disabled = false;
-            document.getElementById('movieList').innerHTML = '<div class="no-movies">Search for movies above or click popular movies below to get started!</div>';
+            // Interface is always enabled now
+            return true;
         }
 
         function showError(message) {
-            document.getElementById('apiStatus').innerHTML = `<div class="error">${message}</div>`;
+            console.error(message);
         }
 
         function showSuccess(message) {
-            document.getElementById('apiStatus').innerHTML = `<div class="success">${message}</div>`;
+            console.log(message);
         }
 
         function showLoading(message) {
-            document.getElementById('apiStatus').innerHTML = `<div class="loading">${message}</div>`;
+            console.log(message);
         }
 
         async function searchMovies() {
-            if (!apiKey) {
-                showError('Please set your API key first');
-                return;
-            }
-
             const query = document.getElementById('movieInput').value.trim();
             if (!query) return;
 
@@ -474,7 +421,7 @@
                 
                 displaySearchResults(data.results.slice(0, 5));
             } catch (error) {
-                showError('Error searching movies');
+                console.error('Error searching movies:', error);
             }
         }
 
@@ -636,13 +583,6 @@
         document.getElementById('movieInput').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
                 searchMovies();
-            }
-        });
-
-        // Allow Enter key to set API key
-        document.getElementById('apiKeyInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                setApiKey();
             }
         });
 
