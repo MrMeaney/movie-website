@@ -378,50 +378,43 @@
     </div>
 
     <script>
-        // Hardcoded API key for easy use
-        let apiKey = 'a7ea6c7ac50c3b3f8b5e9c6d7e8f9a0b'; // You'll need to replace this with your actual TMDB API key
+        // Hardcoded API key for easy use - REPLACE WITH YOUR ACTUAL TMDB API KEY
+        let apiKey = '73da052b6d071d1d9a41cab6d4dc981c'; // Replace this with your real TMDB API key
         let userMovies = [];
         const API_BASE = 'https://api.themoviedb.org/3';
         const IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
 
         // Initialize the app when page loads
         window.addEventListener('load', function() {
-            loadPopularMovies();
+            if (apiKey === 'YOUR_API_KEY_HERE') {
+                document.getElementById('popularMovies').innerHTML = '<div class="error">⚠️ Please replace YOUR_API_KEY_HERE with your actual TMDB API key in the code</div>';
+            } else {
+                loadPopularMovies();
+            }
         });
-
-        async function setApiKey() {
-            // This function is no longer needed since API key is hardcoded
-            return true;
-        }
-
-        function enableInterface() {
-            // Interface is always enabled now
-            return true;
-        }
-
-        function showError(message) {
-            console.error(message);
-        }
-
-        function showSuccess(message) {
-            console.log(message);
-        }
-
-        function showLoading(message) {
-            console.log(message);
-        }
 
         async function searchMovies() {
             const query = document.getElementById('movieInput').value.trim();
             if (!query) return;
 
+            if (apiKey === 'YOUR_API_KEY_HERE') {
+                alert('Please set up your TMDB API key first!');
+                return;
+            }
+
             try {
                 const response = await fetch(`${API_BASE}/search/movie?api_key=${apiKey}&query=${encodeURIComponent(query)}`);
-                const data = await response.json();
                 
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+                
+                const data = await response.json();
                 displaySearchResults(data.results.slice(0, 5));
             } catch (error) {
                 console.error('Error searching movies:', error);
+                document.getElementById('searchResults').innerHTML = '<div style="padding: 10px; color: #e53e3e;">Error searching movies. Please check your API key.</div>';
+                document.getElementById('searchResults').style.display = 'block';
             }
         }
 
@@ -448,8 +441,18 @@
         }
 
         async function addMovieFromSearch(movieId) {
+            if (apiKey === 'YOUR_API_KEY_HERE') {
+                alert('Please set up your TMDB API key first!');
+                return;
+            }
+
             try {
                 const response = await fetch(`${API_BASE}/movie/${movieId}?api_key=${apiKey}`);
+                
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+                
                 const movie = await response.json();
                 
                 if (!userMovies.find(m => m.id === movie.id)) {
@@ -468,13 +471,24 @@
                     document.getElementById('movieInput').value = '';
                 }
             } catch (error) {
-                showError('Error adding movie');
+                console.error('Error adding movie:', error);
+                alert('Error adding movie. Please try again.');
             }
         }
 
         async function loadPopularMovies() {
+            if (apiKey === 'YOUR_API_KEY_HERE') {
+                document.getElementById('popularMovies').innerHTML = '<div class="error">⚠️ Please replace YOUR_API_KEY_HERE with your actual TMDB API key in the code</div>';
+                return;
+            }
+
             try {
                 const response = await fetch(`${API_BASE}/movie/popular?api_key=${apiKey}`);
+                
+                if (!response.ok) {
+                    throw new Error('API request failed');
+                }
+                
                 const data = await response.json();
                 
                 const popularEl = document.getElementById('popularMovies');
@@ -484,7 +498,8 @@
                     </button>
                 `).join('');
             } catch (error) {
-                document.getElementById('popularMovies').innerHTML = '<div class="error">Error loading popular movies</div>';
+                console.error('Error loading popular movies:', error);
+                document.getElementById('popularMovies').innerHTML = '<div class="error">❌ Error loading popular movies. Please check your API key.</div>';
             }
         }
 
