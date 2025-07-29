@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MovieMatch - Get Personalized Movie Recommendations</title>
+    <title>MovieMatch - Enhanced Recommendations</title>
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
         :root {
@@ -19,6 +19,7 @@
             --glass-border: rgba(255, 255, 255, 0.1);
             --success-color: #10b981;
             --error-color: #ef4444;
+            --warning-color: #f59e0b;
         }
 
         * {
@@ -324,6 +325,24 @@
             gap: 0.25rem;
         }
 
+        .rating-selector {
+            display: flex;
+            gap: 0.25rem;
+            margin-top: 0.5rem;
+        }
+
+        .star-rating {
+            cursor: pointer;
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            transition: color 0.2s ease;
+        }
+
+        .star-rating:hover,
+        .star-rating.active {
+            color: #fbbf24;
+        }
+
         .remove-btn {
             background: var(--error-color);
             color: white;
@@ -339,6 +358,82 @@
         .remove-btn:hover {
             background: #dc2626;
             transform: scale(1.05);
+        }
+
+        .preferences-section {
+            margin-bottom: 2rem;
+        }
+
+        .preference-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .preference-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            padding: 1rem;
+            border-radius: 12px;
+            text-align: center;
+        }
+
+        .preference-card h4 {
+            color: var(--text-primary);
+            margin-bottom: 0.5rem;
+            font-size: 0.9rem;
+        }
+
+        .genre-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-top: 1rem;
+        }
+
+        .genre-tag {
+            background: rgba(99, 102, 241, 0.1);
+            border: 1px solid rgba(99, 102, 241, 0.3);
+            color: var(--accent-color);
+            padding: 0.25rem 0.75rem;
+            border-radius: 16px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .genre-tag:hover {
+            background: rgba(99, 102, 241, 0.2);
+        }
+
+        .genre-tag.selected {
+            background: var(--accent-color);
+            color: white;
+        }
+
+        .recommendation-controls {
+            display: flex;
+            gap: 1rem;
+            margin-bottom: 2rem;
+            flex-wrap: wrap;
+        }
+
+        .filter-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            transition: all 0.2s ease;
+        }
+
+        .filter-btn:hover,
+        .filter-btn.active {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
         }
 
         .popular-movies {
@@ -373,7 +468,7 @@
 
         .rec-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
             gap: 1.5rem;
             margin-top: 2rem;
         }
@@ -416,6 +511,19 @@
             transform: scale(1.1);
         }
 
+        .match-score {
+            position: absolute;
+            top: 1rem;
+            right: 1rem;
+            background: linear-gradient(135deg, var(--success-color), #059669);
+            color: white;
+            padding: 0.5rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+        }
+
         .rec-card-content {
             padding: 1.5rem;
         }
@@ -435,14 +543,29 @@
             font-size: 0.9rem;
         }
 
+        .rec-reasons {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
         .rec-reason {
-            font-size: 0.8rem;
+            font-size: 0.75rem;
             color: var(--accent-color);
             font-weight: 500;
             background: rgba(99, 102, 241, 0.1);
-            padding: 0.25rem 0.75rem;
-            border-radius: 16px;
+            padding: 0.25rem 0.5rem;
+            border-radius: 12px;
             border: 1px solid rgba(99, 102, 241, 0.2);
+        }
+
+        .rec-metadata {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.8rem;
+            color: var(--text-muted);
         }
 
         .empty-state {
@@ -501,6 +624,7 @@
             .header { margin-bottom: 2rem; }
             .search-input-group { flex-direction: column; }
             .card { padding: 1.5rem; }
+            .recommendation-controls { flex-direction: column; }
         }
     </style>
 </head>
@@ -508,17 +632,17 @@
     <div class="container">
         <div class="header">
             <h1>🎬 MovieMatch</h1>
-            <p>Discover your next favorite movie with AI-powered recommendations</p>
+            <p>Advanced AI-powered movie recommendations with personalized matching</p>
         </div>
 
         <div class="status-card">
-            <h3>✅ Ready to Use</h3>
-            <p>Your movie database is ready! Search from 600,000+ movies with real posters, ratings, and data from The Movie Database (TMDB).</p>
+            <h3>✅ Enhanced Recommendation Engine</h3>
+            <p>Now featuring advanced preference learning, genre analysis, rating patterns, and multi-factor scoring for better matches!</p>
         </div>
 
         <div class="main-grid">
             <div class="card">
-                <h2>Movies You've Enjoyed</h2>
+                <h2>Your Movie Profile</h2>
                 <div class="search-container">
                     <div class="search-input-group">
                         <input type="text" id="movieInput" class="search-input" placeholder="Search for any movie..." />
@@ -526,29 +650,57 @@
                     </div>
                     <div class="search-results" id="searchResults"></div>
                 </div>
+                
+                <div class="preferences-section">
+                    <h3 style="color: var(--text-primary); margin-bottom: 1rem; font-size: 1.1rem;">Your Preferences</h3>
+                    <div class="preference-grid">
+                        <div class="preference-card">
+                            <h4>Avg Rating</h4>
+                            <div id="avgRating" style="color: var(--success-color); font-size: 1.5rem; font-weight: 600;">--</div>
+                        </div>
+                        <div class="preference-card">
+                            <h4>Favorite Era</h4>
+                            <div id="favoriteEra" style="color: var(--accent-color); font-weight: 500;">--</div>
+                        </div>
+                        <div class="preference-card">
+                            <h4>Top Genre</h4>
+                            <div id="topGenre" style="color: var(--warning-color); font-weight: 500;">--</div>
+                        </div>
+                    </div>
+                    <div class="genre-tags" id="genrePreferences"></div>
+                </div>
+
                 <div class="movie-list" id="movieList">
                     <div class="empty-state">
                         <div class="empty-state-icon">🎭</div>
-                        <p>Search for movies above or click popular movies to get started!</p>
+                        <p>Add movies and rate them to build your personalized profile!</p>
                     </div>
                 </div>
-                <button class="btn" onclick="getRecommendations()" style="width: 100%;" id="recBtn">Get Personalized Recommendations</button>
+                
+                <div class="recommendation-controls">
+                    <button class="filter-btn active" data-mode="personalized">🎯 Personalized</button>
+                    <button class="filter-btn" data-mode="trending">🔥 Trending</button>
+                    <button class="filter-btn" data-mode="underrated">💎 Hidden Gems</button>
+                    <button class="filter-btn" data-mode="recent">🆕 Recent</button>
+                </div>
+                
+                <button class="btn" onclick="getEnhancedRecommendations()" style="width: 100%;" id="recBtn">Get Smart Recommendations</button>
             </div>
 
             <div class="card">
-                <h2>Popular Movies</h2>
-                <p style="margin-bottom: 1rem; color: var(--text-secondary);">Click to add popular movies you've enjoyed:</p>
+                <h2>Discover Movies</h2>
+                <p style="margin-bottom: 1rem; color: var(--text-secondary);">Quick add popular movies:</p>
                 <div class="popular-movies" id="popularMovies">
                     <div class="loading-state">
                         <div class="loading-spinner"></div>
-                        <p>Loading today's popular movies...</p>
+                        <p>Loading trending movies...</p>
                     </div>
                 </div>
             </div>
         </div>
 
         <div class="card recommendations-section" id="recommendationsSection" style="display: none;">
-            <h2>🌟 Recommended Movies For You</h2>
+            <h2>🌟 Your Personalized Recommendations</h2>
             <div class="rec-grid" id="recommendationsList"></div>
         </div>
     </div>
@@ -556,6 +708,15 @@
     <script>
         let apiKey = '73da052b6d071d1d9a41cab6d4dc981c';
         let userMovies = [];
+        let userPreferences = {
+            genres: {},
+            avgRating: 0,
+            ratingTrend: 'moderate',
+            favoriteDecade: null,
+            preferredLength: 'any'
+        };
+        let recommendationMode = 'personalized';
+        
         const API_BASE = 'https://api.themoviedb.org/3';
         const IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
 
@@ -565,6 +726,15 @@
             } else {
                 loadPopularMovies();
             }
+            
+            // Setup recommendation mode buttons
+            document.querySelectorAll('.filter-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                    btn.classList.add('active');
+                    recommendationMode = btn.dataset.mode;
+                });
+            });
         });
 
         async function searchMovies() {
@@ -616,10 +786,13 @@
                         genres: movie.genres.map(g => g.name),
                         poster: movie.poster_path ? IMAGE_BASE + movie.poster_path : null,
                         rating: movie.vote_average,
-                        overview: movie.overview
+                        overview: movie.overview,
+                        userRating: 4, // Default rating
+                        runtime: movie.runtime
                     });
                     
                     updateMovieList();
+                    updateUserPreferences();
                     document.getElementById('searchResults').style.display = 'none';
                     document.getElementById('movieInput').value = '';
                 }
@@ -643,9 +816,79 @@
             }
         }
 
+        function setUserRating(movieId, rating) {
+            const movie = userMovies.find(m => m.id === movieId);
+            if (movie) {
+                movie.userRating = rating;
+                updateUserPreferences();
+            }
+        }
+
+        function updateUserPreferences() {
+            if (userMovies.length === 0) return;
+
+            // Calculate average user rating
+            userPreferences.avgRating = userMovies.reduce((sum, m) => sum + m.userRating, 0) / userMovies.length;
+
+            // Analyze genre preferences with weighted scoring
+            userPreferences.genres = {};
+            userMovies.forEach(movie => {
+                movie.genres.forEach(genre => {
+                    if (!userPreferences.genres[genre]) {
+                        userPreferences.genres[genre] = { count: 0, avgRating: 0, totalRating: 0 };
+                    }
+                    userPreferences.genres[genre].count++;
+                    userPreferences.genres[genre].totalRating += movie.userRating;
+                    userPreferences.genres[genre].avgRating = userPreferences.genres[genre].totalRating / userPreferences.genres[genre].count;
+                });
+            });
+
+            // Find favorite decade
+            const decades = {};
+            userMovies.forEach(movie => {
+                const decade = Math.floor(parseInt(movie.year) / 10) * 10;
+                if (!decades[decade]) decades[decade] = { count: 0, avgRating: 0, totalRating: 0 };
+                decades[decade].count++;
+                decades[decade].totalRating += movie.userRating;
+                decades[decade].avgRating = decades[decade].totalRating / decades[decade].count;
+            });
+            
+            userPreferences.favoriteDecade = Object.entries(decades)
+                .sort((a, b) => (b[1].count * b[1].avgRating) - (a[1].count * a[1].avgRating))[0]?.[0];
+
+            // Determine rating trend
+            const avgUserRating = userPreferences.avgRating;
+            if (avgUserRating >= 4.5) userPreferences.ratingTrend = 'high';
+            else if (avgUserRating >= 3.5) userPreferences.ratingTrend = 'moderate';
+            else userPreferences.ratingTrend = 'low';
+
+            updatePreferencesDisplay();
+        }
+
+        function updatePreferencesDisplay() {
+            document.getElementById('avgRating').textContent = userPreferences.avgRating.toFixed(1);
+            document.getElementById('favoriteEra').textContent = userPreferences.favoriteDecade ? `${userPreferences.favoriteDecade}s` : '--';
+            
+            const topGenre = Object.entries(userPreferences.genres)
+                .sort((a, b) => (b[1].count * b[1].avgRating) - (a[1].count * a[1].avgRating))[0];
+            document.getElementById('topGenre').textContent = topGenre ? topGenre[0] : '--';
+
+            // Display genre preferences
+            const genreContainer = document.getElementById('genrePreferences');
+            genreContainer.innerHTML = Object.entries(userPreferences.genres)
+                .sort((a, b) => (b[1].count * b[1].avgRating) - (a[1].count * a[1].avgRating))
+                .slice(0, 8)
+                .map(([genre, data]) => `
+                    <div class="genre-tag selected">
+                        ${genre} (${data.count}) ⭐${data.avgRating.toFixed(1)}
+                    </div>
+                `).join('');
+        }
+
         function removeMovie(movieId) {
             userMovies = userMovies.filter(m => m.id !== movieId);
             updateMovieList();
+            updateUserPreferences();
         }
 
         function updateMovieList() {
@@ -655,7 +898,7 @@
                 listEl.innerHTML = `
                     <div class="empty-state">
                         <div class="empty-state-icon">🎭</div>
-                        <p>Add some movies you've enjoyed to get personalized recommendations!</p>
+                        <p>Add movies and rate them to build your personalized profile!</p>
                     </div>
                 `;
                 return;
@@ -668,13 +911,20 @@
                         <h3>${movie.title}</h3>
                         <p>${movie.year} • ${movie.genres.join(', ')}</p>
                         <div class="movie-rating">⭐ ${movie.rating.toFixed(1)}</div>
+                        <div class="rating-selector">
+                            ${[1,2,3,4,5].map(star => `
+                                <span class="star-rating ${star <= movie.userRating ? 'active' : ''}" 
+                                      onclick="setUserRating(${movie.id}, ${star})">★</span>
+                            `).join('')}
+                            <span style="margin-left: 0.5rem; color: var(--text-muted); font-size: 0.8rem;">Your rating</span>
+                        </div>
                     </div>
                     <button class="remove-btn" onclick="removeMovie(${movie.id})">Remove</button>
                 </div>
             `).join('');
         }
 
-        async function getRecommendations() {
+        async function getEnhancedRecommendations() {
             if (userMovies.length === 0) {
                 alert('Please add at least one movie first!');
                 return;
@@ -683,7 +933,7 @@
             document.getElementById('recommendationsList').innerHTML = `
                 <div class="loading-state" style="grid-column: 1 / -1;">
                     <div class="loading-spinner"></div>
-                    <p>Analyzing ${userMovies.length} movies to find your perfect matches...</p>
+                    <p>Analyzing your ${userMovies.length} movies with advanced AI matching...</p>
                 </div>
             `;
             document.getElementById('recommendationsSection').style.display = 'block';
@@ -691,10 +941,9 @@
             try {
                 const allRecs = [];
                 
-                // Use up to 8 seed movies (or all if user has fewer)
-                const seedMovies = userMovies.slice(0, Math.min(8, userMovies.length));
+                // Get base recommendations from multiple sources
+                const seedMovies = userMovies.slice(0, Math.min(10, userMovies.length));
                 
-                // Get both recommendations and similar movies for better variety
                 for (const movie of seedMovies) {
                     const [recResponse, simResponse] = await Promise.all([
                         fetch(`${API_BASE}/movie/${movie.id}/recommendations?api_key=${apiKey}&page=1`),
@@ -704,13 +953,12 @@
                     const recData = await recResponse.json();
                     const simData = await simResponse.json();
                     
-                    // Combine recommendations and similar movies
                     const combinedResults = [...recData.results, ...simData.results];
                     
                     combinedResults.forEach(rec => {
                         if (!userMovies.find(m => m.id === rec.id) && 
-                            rec.vote_average >= 5.5 && 
-                            rec.popularity > 5 &&
+                            rec.vote_average >= 5.0 && 
+                            rec.popularity > 3 &&
                             rec.release_date) {
                             
                             allRecs.push({
@@ -722,69 +970,243 @@
                                 year: rec.release_date ? rec.release_date.split('-')[0] : 'N/A',
                                 popularity: rec.popularity,
                                 basedOn: movie.title,
-                                seedRating: movie.rating, // Store the seed movie's rating for scoring
-                                releaseDate: rec.release_date
+                                seedRating: movie.userRating,
+                                seedMovieRating: movie.rating,
+                                releaseDate: rec.release_date,
+                                genreIds: rec.genre_ids || []
                             });
                         }
                     });
+                }
+
+                // Add genre-based and discover recommendations based on mode
+                if (recommendationMode === 'trending') {
+                    await addTrendingMovies(allRecs);
+                } else if (recommendationMode === 'underrated') {
+                    await addUnderratedGems(allRecs);
+                } else if (recommendationMode === 'recent') {
+                    await addRecentMovies(allRecs);
                 }
                 
                 // Remove duplicates
                 const uniqueRecs = Array.from(new Map(allRecs.map(item => [item.id, item])).values());
                 
-                // Enhanced scoring algorithm
-                const scoredRecs = uniqueRecs.map(rec => ({
+                // Get detailed movie info for better scoring
+                const detailedRecs = await Promise.all(
+                    uniqueRecs.slice(0, 50).map(async rec => {
+                        try {
+                            const response = await fetch(`${API_BASE}/movie/${rec.id}?api_key=${apiKey}`);
+                            const details = await response.json();
+                            return {
+                                ...rec,
+                                genres: details.genres?.map(g => g.name) || [],
+                                runtime: details.runtime,
+                                budget: details.budget,
+                                revenue: details.revenue
+                            };
+                        } catch {
+                            return { ...rec, genres: [] };
+                        }
+                    })
+                );
+                
+                // Enhanced scoring with personalization
+                const scoredRecs = detailedRecs.map(rec => ({
                     ...rec,
-                    score: calculateRecommendationScore(rec)
+                    matchScore: calculateAdvancedMatchScore(rec),
+                    reasons: generateRecommendationReasons(rec)
                 }));
                 
-                // Sort by score and get top 15 recommendations
+                // Sort by match score and get top recommendations
                 const finalRecs = scoredRecs
-                    .sort((a, b) => b.score - a.score)
-                    .slice(0, 15);
+                    .sort((a, b) => b.matchScore - a.matchScore)
+                    .slice(0, 18);
                 
-                displayRecommendations(finalRecs);
+                displayEnhancedRecommendations(finalRecs);
             } catch (error) {
                 document.getElementById('recommendationsList').innerHTML = '<div class="alert alert-error">Error getting recommendations.</div>';
             }
         }
 
-        function calculateRecommendationScore(rec) {
-            let score = 0;
-            
-            // Base score from movie rating (0-100 points)
-            score += rec.rating * 10;
-            
-            // Popularity factor (logarithmic to prevent extremely popular movies from dominating)
-            score += Math.log(rec.popularity + 1) * 3;
-            
-            // Recency bonus (newer movies get slight preference)
-            const currentYear = new Date().getFullYear();
-            const movieYear = parseInt(rec.year);
-            if (movieYear >= currentYear - 3) {
-                score += 15; // Very recent
-            } else if (movieYear >= currentYear - 8) {
-                score += 10; // Recent
-            } else if (movieYear >= currentYear - 15) {
-                score += 5; // Somewhat recent
+        async function addTrendingMovies(allRecs) {
+            try {
+                const response = await fetch(`${API_BASE}/trending/movie/week?api_key=${apiKey}`);
+                const data = await response.json();
+                data.results.forEach(movie => {
+                    if (!userMovies.find(m => m.id === movie.id) && movie.vote_average >= 6.0) {
+                        allRecs.push({
+                            id: movie.id,
+                            title: movie.title,
+                            overview: movie.overview,
+                            poster: movie.poster_path ? IMAGE_BASE + movie.poster_path : null,
+                            rating: movie.vote_average,
+                            year: movie.release_date ? movie.release_date.split('-')[0] : 'N/A',
+                            popularity: movie.popularity,
+                            basedOn: 'Trending',
+                            seedRating: 4,
+                            releaseDate: movie.release_date,
+                            genreIds: movie.genre_ids || []
+                        });
+                    }
+                });
+            } catch (error) {
+                console.log('Error fetching trending movies');
             }
-            
-            // Quality threshold bonus
-            if (rec.rating >= 7.5) {
-                score += 20; // High quality
-            } else if (rec.rating >= 7.0) {
-                score += 10; // Good quality
-            }
-            
-            // Seed movie quality influence (if user liked high-rated movies, prefer high-rated recs)
-            if (rec.seedRating >= 8.0 && rec.rating >= 7.0) {
-                score += 15; // User likes quality, recommend quality
-            }
-            
-            return score;
         }
 
-        function displayRecommendations(recs) {
+        async function addUnderratedGems(allRecs) {
+            try {
+                const response = await fetch(`${API_BASE}/discover/movie?api_key=${apiKey}&sort_by=vote_average.desc&vote_count.gte=100&vote_count.lte=1000&vote_average.gte=7.5`);
+                const data = await response.json();
+                data.results.forEach(movie => {
+                    if (!userMovies.find(m => m.id === movie.id)) {
+                        allRecs.push({
+                            id: movie.id,
+                            title: movie.title,
+                            overview: movie.overview,
+                            poster: movie.poster_path ? IMAGE_BASE + movie.poster_path : null,
+                            rating: movie.vote_average,
+                            year: movie.release_date ? movie.release_date.split('-')[0] : 'N/A',
+                            popularity: movie.popularity,
+                            basedOn: 'Hidden Gem',
+                            seedRating: 4.5,
+                            releaseDate: movie.release_date,
+                            genreIds: movie.genre_ids || []
+                        });
+                    }
+                });
+            } catch (error) {
+                console.log('Error fetching underrated movies');
+            }
+        }
+
+        async function addRecentMovies(allRecs) {
+            try {
+                const currentYear = new Date().getFullYear();
+                const response = await fetch(`${API_BASE}/discover/movie?api_key=${apiKey}&primary_release_year=${currentYear}&sort_by=vote_average.desc&vote_count.gte=50`);
+                const data = await response.json();
+                data.results.forEach(movie => {
+                    if (!userMovies.find(m => m.id === movie.id) && movie.vote_average >= 6.5) {
+                        allRecs.push({
+                            id: movie.id,
+                            title: movie.title,
+                            overview: movie.overview,
+                            poster: movie.poster_path ? IMAGE_BASE + movie.poster_path : null,
+                            rating: movie.vote_average,
+                            year: movie.release_date ? movie.release_date.split('-')[0] : 'N/A',
+                            popularity: movie.popularity,
+                            basedOn: 'Recent Release',
+                            seedRating: 4,
+                            releaseDate: movie.release_date,
+                            genreIds: movie.genre_ids || []
+                        });
+                    }
+                });
+            } catch (error) {
+                console.log('Error fetching recent movies');
+            }
+        }
+
+        function calculateAdvancedMatchScore(rec) {
+            let score = 0;
+            
+            // Base quality score (0-100 points)
+            score += rec.rating * 10;
+            
+            // Genre preference matching (0-50 points)
+            let genreScore = 0;
+            let genreMatches = 0;
+            rec.genres.forEach(genre => {
+                if (userPreferences.genres[genre]) {
+                    genreScore += userPreferences.genres[genre].avgRating * userPreferences.genres[genre].count;
+                    genreMatches++;
+                }
+            });
+            if (genreMatches > 0) {
+                score += (genreScore / genreMatches) * 10;
+            }
+            
+            // Year preference (0-20 points)
+            const movieDecade = Math.floor(parseInt(rec.year) / 10) * 10;
+            if (movieDecade == userPreferences.favoriteDecade) {
+                score += 20;
+            }
+            
+            // Rating alignment (0-25 points)
+            const userAvgRating = userPreferences.avgRating;
+            if (userPreferences.ratingTrend === 'high' && rec.rating >= 7.5) {
+                score += 25;
+            } else if (userPreferences.ratingTrend === 'moderate' && rec.rating >= 6.5 && rec.rating <= 8.5) {
+                score += 20;
+            } else if (userPreferences.ratingTrend === 'low' && rec.rating >= 5.5) {
+                score += 15;
+            }
+            
+            // Seed movie relationship bonus (0-30 points)
+            if (rec.seedRating >= 4) {
+                score += rec.seedRating * 6;
+            }
+            
+            // Popularity adjustment based on mode
+            if (recommendationMode === 'trending') {
+                score += Math.log(rec.popularity + 1) * 2;
+            } else if (recommendationMode === 'underrated') {
+                // Favor less popular but high-quality movies
+                if (rec.popularity < 50 && rec.rating >= 7.0) {
+                    score += 20;
+                }
+            } else if (recommendationMode === 'recent') {
+                const currentYear = new Date().getFullYear();
+                if (parseInt(rec.year) >= currentYear - 2) {
+                    score += 15;
+                }
+            }
+            
+            // Recency factor (slight preference for newer movies in personalized mode)
+            if (recommendationMode === 'personalized') {
+                const currentYear = new Date().getFullYear();
+                const movieYear = parseInt(rec.year);
+                if (movieYear >= currentYear - 3) {
+                    score += 10;
+                } else if (movieYear >= currentYear - 8) {
+                    score += 5;
+                }
+            }
+            
+            return Math.max(0, score);
+        }
+
+        function generateRecommendationReasons(rec) {
+            const reasons = [];
+            
+            // Genre matches
+            const matchingGenres = rec.genres.filter(genre => userPreferences.genres[genre]);
+            if (matchingGenres.length > 0) {
+                reasons.push(`${matchingGenres.slice(0,2).join(', ')}`);
+            }
+            
+            // Rating alignment
+            if (rec.rating >= 8.0) {
+                reasons.push('Highly rated');
+            }
+            
+            // Year preference
+            const movieDecade = Math.floor(parseInt(rec.year) / 10) * 10;
+            if (movieDecade == userPreferences.favoriteDecade) {
+                reasons.push(`${movieDecade}s favorite`);
+            }
+            
+            // Based on seed movie
+            if (rec.basedOn && rec.basedOn !== 'Trending' && rec.basedOn !== 'Hidden Gem' && rec.basedOn !== 'Recent Release') {
+                reasons.push(`Like "${rec.basedOn}"`);
+            } else if (rec.basedOn) {
+                reasons.push(rec.basedOn);
+            }
+            
+            return reasons.slice(0, 3);
+        }
+
+        function displayEnhancedRecommendations(recs) {
             const list = document.getElementById('recommendationsList');
             
             if (recs.length === 0) {
@@ -796,14 +1218,18 @@
                 <div class="rec-card">
                     <div class="rec-card-image">
                         <img src="${rec.poster || 'https://via.placeholder.com/320x240?text=No+Image&bg=1a1a1a&color=71717a'}" alt="${rec.title}" />
+                        <div class="match-score">${Math.round(rec.matchScore)}% Match</div>
                     </div>
                     <div class="rec-card-content">
                         <h3>${rec.title} (${rec.year})</h3>
-                        <p>${rec.overview ? rec.overview.substring(0, 150) + '...' : 'No description available'}</p>
-                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                            <div class="movie-rating">⭐ ${rec.rating.toFixed(1)}</div>
+                        <p>${rec.overview ? rec.overview.substring(0, 140) + '...' : 'No description available'}</p>
+                        <div class="rec-reasons">
+                            ${rec.reasons.map(reason => `<span class="rec-reason">${reason}</span>`).join('')}
                         </div>
-                        <div class="rec-reason">Because you liked "${rec.basedOn}"</div>
+                        <div class="rec-metadata">
+                            <div class="movie-rating">⭐ ${rec.rating.toFixed(1)}</div>
+                            <div style="color: var(--text-muted);">Match: ${Math.round(rec.matchScore)}%</div>
+                        </div>
                     </div>
                 </div>
             `).join('');
