@@ -4,7 +4,23 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>MovieMatch - Get Personalized Movie Recommendations</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <style>
+        :root {
+            --primary-bg: #0a0a0a;
+            --secondary-bg: #1a1a1a;
+            --accent-color: #6366f1;
+            --accent-hover: #5b5cf6;
+            --text-primary: #ffffff;
+            --text-secondary: #a1a1aa;
+            --text-muted: #71717a;
+            --border-color: rgba(255, 255, 255, 0.1);
+            --glass-bg: rgba(255, 255, 255, 0.05);
+            --glass-border: rgba(255, 255, 255, 0.1);
+            --success-color: #10b981;
+            --error-color: #ef4444;
+        }
+
         * {
             margin: 0;
             padding: 0;
@@ -12,180 +28,271 @@
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+            background: var(--primary-bg);
+            background-image: 
+                radial-gradient(circle at 20% 80%, rgba(120, 119, 198, 0.3) 0%, transparent 50%),
+                radial-gradient(circle at 80% 20%, rgba(255, 119, 198, 0.15) 0%, transparent 50%),
+                radial-gradient(circle at 40% 40%, rgba(120, 200, 255, 0.1) 0%, transparent 50%);
             min-height: 100vh;
-            color: #333;
+            color: var(--text-primary);
+            line-height: 1.6;
+            overflow-x: hidden;
         }
 
         .container {
-            max-width: 1200px;
+            max-width: 1400px;
             margin: 0 auto;
-            padding: 20px;
+            padding: 2rem;
         }
 
         .header {
             text-align: center;
-            margin-bottom: 40px;
-            color: white;
+            margin-bottom: 4rem;
+            position: relative;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: -50px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 200px;
+            background: radial-gradient(circle, rgba(99, 102, 241, 0.4) 0%, transparent 70%);
+            border-radius: 50%;
+            filter: blur(60px);
+            z-index: -1;
         }
 
         .header h1 {
-            font-size: 3em;
-            margin-bottom: 10px;
-            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+            font-size: clamp(2.5rem, 5vw, 4rem);
+            font-weight: 700;
+            margin-bottom: 1rem;
+            background: linear-gradient(135deg, #6366f1, #8b5cf6, #ec4899);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            letter-spacing: -0.02em;
         }
 
         .header p {
-            font-size: 1.2em;
-            opacity: 0.9;
+            font-size: 1.25rem;
+            color: var(--text-secondary);
+            font-weight: 400;
+            max-width: 600px;
+            margin: 0 auto;
         }
 
-        .status-info {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 20px;
-            border-radius: 20px;
-            margin-bottom: 30px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
-            border-left: 5px solid #48bb78;
+        .status-card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            padding: 2rem;
+            border-radius: 24px;
+            margin-bottom: 3rem;
+            position: relative;
+            overflow: hidden;
         }
 
-        .status-info h3 {
-            color: #4a5568;
-            margin-bottom: 15px;
+        .status-card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 1px;
+            background: linear-gradient(90deg, transparent, var(--success-color), transparent);
+        }
+
+        .status-card h3 {
+            color: var(--success-color);
+            margin-bottom: 0.75rem;
             display: flex;
             align-items: center;
-            gap: 10px;
+            gap: 0.75rem;
+            font-weight: 600;
+            font-size: 1.125rem;
         }
 
-        .main-content {
+        .status-card p {
+            color: var(--text-secondary);
+            font-size: 1rem;
+        }
+
+        .main-grid {
             display: grid;
             grid-template-columns: 1fr 1fr;
-            gap: 30px;
-            margin-bottom: 40px;
+            gap: 2rem;
+            margin-bottom: 3rem;
         }
 
-        .section {
-            background: rgba(255, 255, 255, 0.95);
-            padding: 30px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+        .card {
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            padding: 2rem;
+            border-radius: 24px;
+            position: relative;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+
+        .card:hover {
+            transform: translateY(-4px);
+            border-color: rgba(99, 102, 241, 0.3);
+            box-shadow: 0 20px 40px rgba(99, 102, 241, 0.1);
+        }
+
+        .card h2 {
+            font-size: 1.5rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            color: var(--text-primary);
+        }
+
+        .search-container {
+            position: relative;
+            margin-bottom: 1.5rem;
+        }
+
+        .search-input-group {
+            display: flex;
+            gap: 0.75rem;
+            position: relative;
+        }
+
+        .search-input {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            padding: 1rem 1.25rem;
+            border-radius: 16px;
+            color: var(--text-primary);
+            font-size: 1rem;
+            transition: all 0.3s ease;
             backdrop-filter: blur(10px);
         }
 
-        .section h2 {
-            color: #4a5568;
-            margin-bottom: 20px;
-            font-size: 1.5em;
-        }
-
-        .movie-input {
-            display: flex;
-            gap: 10px;
-            margin-bottom: 20px;
-        }
-
-        .movie-input input {
-            flex: 1;
-            padding: 12px;
-            border: 2px solid #e2e8f0;
-            border-radius: 10px;
-            font-size: 1em;
-            transition: border-color 0.3s;
-        }
-
-        .movie-input input:focus {
+        .search-input:focus {
             outline: none;
-            border-color: #667eea;
+            border-color: var(--accent-color);
+            box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.1);
+            background: rgba(255, 255, 255, 0.08);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
         }
 
         .btn {
-            background: linear-gradient(135deg, #667eea, #764ba2);
+            background: linear-gradient(135deg, var(--accent-color), var(--accent-hover));
             color: white;
             border: none;
-            padding: 12px 20px;
-            border-radius: 10px;
+            padding: 1rem 1.5rem;
+            border-radius: 16px;
             cursor: pointer;
-            font-size: 1em;
-            transition: transform 0.2s, box-shadow 0.2s;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+
+        .btn::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .btn:hover::before {
+            left: 100%;
         }
 
         .btn:hover {
             transform: translateY(-2px);
-            box-shadow: 0 5px 15px rgba(0,0,0,0.2);
-        }
-
-        .btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
+            box-shadow: 0 10px 25px rgba(99, 102, 241, 0.3);
         }
 
         .search-results {
-            max-height: 200px;
+            position: absolute;
+            top: 100%;
+            left: 0;
+            right: 0;
+            background: var(--secondary-bg);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            margin-top: 0.5rem;
+            max-height: 300px;
             overflow-y: auto;
-            border: 1px solid #e2e8f0;
-            border-radius: 10px;
-            margin-top: 10px;
+            z-index: 100;
+            backdrop-filter: blur(20px);
             display: none;
-            background: white;
-            z-index: 10;
-            position: relative;
         }
 
         .search-result {
-            padding: 10px;
+            padding: 1rem;
             cursor: pointer;
-            border-bottom: 1px solid #f1f5f9;
+            border-bottom: 1px solid var(--border-color);
             display: flex;
-            gap: 10px;
+            gap: 1rem;
             align-items: center;
+            transition: background-color 0.2s ease;
         }
 
         .search-result:hover {
-            background: #f8fafc;
+            background: rgba(255, 255, 255, 0.05);
         }
 
         .search-result img {
-            width: 40px;
-            height: 60px;
+            width: 48px;
+            height: 72px;
             object-fit: cover;
-            border-radius: 5px;
+            border-radius: 8px;
+            background: var(--glass-bg);
         }
 
         .movie-list {
             max-height: 400px;
             overflow-y: auto;
-            margin-bottom: 20px;
+            margin-bottom: 1.5rem;
+            scrollbar-width: thin;
+            scrollbar-color: var(--accent-color) transparent;
         }
 
         .movie-item {
-            background: #f7fafc;
-            padding: 15px;
-            border-radius: 10px;
-            margin-bottom: 10px;
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid var(--border-color);
+            padding: 1.25rem;
+            border-radius: 16px;
+            margin-bottom: 0.75rem;
             display: flex;
-            gap: 15px;
+            gap: 1rem;
             align-items: center;
-            animation: slideIn 0.3s ease-out;
+            transition: all 0.3s ease;
+            animation: slideInUp 0.5s ease-out;
+        }
+
+        .movie-item:hover {
+            background: rgba(255, 255, 255, 0.06);
+            border-color: rgba(99, 102, 241, 0.3);
+        }
+
+        @keyframes slideInUp {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         .movie-item img {
             width: 60px;
             height: 90px;
             object-fit: cover;
-            border-radius: 8px;
-        }
-
-        @keyframes slideIn {
-            from {
-                opacity: 0;
-                transform: translateX(-20px);
-            }
-            to {
-                opacity: 1;
-                transform: translateX(0);
-            }
+            border-radius: 12px;
         }
 
         .movie-info {
@@ -193,144 +300,207 @@
         }
 
         .movie-info h3 {
-            color: #2d3748;
-            margin-bottom: 5px;
+            color: var(--text-primary);
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            font-size: 1.125rem;
         }
 
         .movie-info p {
-            color: #718096;
-            font-size: 0.9em;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            margin-bottom: 0.5rem;
         }
 
-        .rating {
-            background: #48bb78;
+        .movie-rating {
+            background: linear-gradient(135deg, var(--success-color), #059669);
             color: white;
-            padding: 4px 8px;
-            border-radius: 15px;
-            font-size: 0.8em;
-            margin-top: 5px;
-            display: inline-block;
+            padding: 0.25rem 0.75rem;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
         }
 
         .remove-btn {
-            background: #e53e3e;
+            background: var(--error-color);
             color: white;
             border: none;
-            padding: 8px 12px;
-            border-radius: 5px;
+            padding: 0.5rem 1rem;
+            border-radius: 12px;
             cursor: pointer;
-            font-size: 0.8em;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.2s ease;
         }
 
         .remove-btn:hover {
-            background: #c53030;
+            background: #dc2626;
+            transform: scale(1.05);
         }
 
-        .recommendations {
+        .popular-movies {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.75rem;
+            margin-top: 1rem;
+        }
+
+        .popular-movie-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            color: var(--text-primary);
+            padding: 0.75rem 1rem;
+            border-radius: 12px;
+            cursor: pointer;
+            font-size: 0.875rem;
+            font-weight: 500;
+            transition: all 0.3s ease;
+        }
+
+        .popular-movie-btn:hover {
+            background: var(--accent-color);
+            border-color: var(--accent-color);
+            transform: translateY(-2px);
+        }
+
+        .recommendations-section {
             grid-column: 1 / -1;
+            margin-top: 2rem;
         }
 
         .rec-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
-            gap: 20px;
-            margin-top: 20px;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
         }
 
         .rec-card {
-            background: rgba(255, 255, 255, 0.95);
-            border-radius: 15px;
+            background: var(--glass-bg);
+            backdrop-filter: blur(20px);
+            border: 1px solid var(--glass-border);
+            border-radius: 20px;
             overflow: hidden;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            transform: scale(0.95);
-            animation: popIn 0.5s ease-out forwards;
-            transition: transform 0.3s;
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+            animation: fadeIn 0.6s ease-out;
         }
 
         .rec-card:hover {
-            transform: scale(1.02);
+            transform: translateY(-8px) scale(1.02);
+            border-color: rgba(99, 102, 241, 0.4);
+            box-shadow: 0 25px 50px rgba(99, 102, 241, 0.15);
         }
 
-        @keyframes popIn {
-            to {
-                transform: scale(1);
-            }
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(30px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
-        .rec-card img {
+        .rec-card-image {
+            position: relative;
+            overflow: hidden;
+            height: 240px;
+        }
+
+        .rec-card-image img {
             width: 100%;
-            height: 200px;
+            height: 100%;
             object-fit: cover;
+            transition: transform 0.4s ease;
+        }
+
+        .rec-card:hover .rec-card-image img {
+            transform: scale(1.1);
         }
 
         .rec-card-content {
-            padding: 20px;
+            padding: 1.5rem;
         }
 
         .rec-card h3 {
-            color: #2d3748;
-            font-size: 1.3em;
-            margin-bottom: 10px;
+            color: var(--text-primary);
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-bottom: 0.75rem;
+            line-height: 1.3;
         }
 
         .rec-card p {
-            color: #4a5568;
-            line-height: 1.4;
-            margin-bottom: 10px;
-            font-size: 0.9em;
+            color: var(--text-secondary);
+            line-height: 1.5;
+            margin-bottom: 1rem;
+            font-size: 0.9rem;
         }
 
-        .genre-tag {
-            background: linear-gradient(135deg, #667eea, #764ba2);
-            color: white;
-            padding: 4px 8px;
-            border-radius: 15px;
-            font-size: 0.8em;
-            margin: 2px;
-            display: inline-block;
+        .rec-reason {
+            font-size: 0.8rem;
+            color: var(--accent-color);
+            font-weight: 500;
+            background: rgba(99, 102, 241, 0.1);
+            padding: 0.25rem 0.75rem;
+            border-radius: 16px;
+            border: 1px solid rgba(99, 102, 241, 0.2);
         }
 
-        .no-movies {
+        .empty-state {
             text-align: center;
-            color: #718096;
-            font-style: italic;
-            padding: 40px;
+            padding: 3rem 1rem;
+            color: var(--text-muted);
         }
 
-        .loading {
+        .empty-state-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .loading-state {
             text-align: center;
-            padding: 20px;
-            color: #667eea;
+            padding: 2rem;
+            color: var(--accent-color);
         }
 
-        .error {
-            background: #fed7d7;
-            color: #c53030;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 10px 0;
+        .loading-spinner {
+            width: 40px;
+            height: 40px;
+            border: 3px solid rgba(99, 102, 241, 0.2);
+            border-top: 3px solid var(--accent-color);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 1rem;
         }
 
-        .success {
-            background: #c6f6d5;
-            color: #2f855a;
-            padding: 15px;
-            border-radius: 10px;
-            margin: 10px 0;
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .alert {
+            padding: 1rem 1.25rem;
+            border-radius: 12px;
+            margin: 1rem 0;
+            font-weight: 500;
+        }
+
+        .alert-error {
+            background: rgba(239, 68, 68, 0.1);
+            color: var(--error-color);
+            border: 1px solid rgba(239, 68, 68, 0.2);
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid { grid-template-columns: 1fr; }
+            .rec-grid { grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); }
         }
 
         @media (max-width: 768px) {
-            .main-content {
-                grid-template-columns: 1fr;
-            }
-            
-            .header h1 {
-                font-size: 2em;
-            }
-            
-            .movie-input, .api-input {
-                flex-direction: column;
-            }
+            .container { padding: 1rem; }
+            .header { margin-bottom: 2rem; }
+            .search-input-group { flex-direction: column; }
+            .card { padding: 1.5rem; }
         }
     </style>
 </head>
@@ -338,56 +508,60 @@
     <div class="container">
         <div class="header">
             <h1>🎬 MovieMatch</h1>
-            <p>Discover your next favorite movie with real movie data</p>
+            <p>Discover your next favorite movie with AI-powered recommendations</p>
         </div>
 
-        <div class="status-info">
+        <div class="status-card">
             <h3>✅ Ready to Use</h3>
-            <p style="color: #2f855a;">
-                Your movie database is ready! You can now search from 600,000+ movies with real posters, ratings, and data from The Movie Database (TMDB).
-            </p>
+            <p>Your movie database is ready! Search from 600,000+ movies with real posters, ratings, and data from The Movie Database (TMDB).</p>
         </div>
 
-        <div class="main-content">
-            <div class="section">
+        <div class="main-grid">
+            <div class="card">
                 <h2>Movies You've Enjoyed</h2>
-                <div class="movie-input">
-                    <input type="text" id="movieInput" placeholder="Search for any movie..." />
-                    <button class="btn" onclick="searchMovies()" id="searchBtn">Search</button>
+                <div class="search-container">
+                    <div class="search-input-group">
+                        <input type="text" id="movieInput" class="search-input" placeholder="Search for any movie..." />
+                        <button class="btn" onclick="searchMovies()" id="searchBtn">Search</button>
+                    </div>
+                    <div class="search-results" id="searchResults"></div>
                 </div>
-                <div class="search-results" id="searchResults"></div>
                 <div class="movie-list" id="movieList">
-                    <div class="no-movies">Search for movies above or click popular movies below to get started!</div>
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎭</div>
+                        <p>Search for movies above or click popular movies to get started!</p>
+                    </div>
                 </div>
                 <button class="btn" onclick="getRecommendations()" style="width: 100%;" id="recBtn">Get Personalized Recommendations</button>
             </div>
 
-            <div class="section">
+            <div class="card">
                 <h2>Popular Movies</h2>
-                <p style="margin-bottom: 15px; color: #718096;">Click to add popular movies you've enjoyed:</p>
-                <div id="popularMovies">
-                    <div class="loading">Loading today's popular movies...</div>
+                <p style="margin-bottom: 1rem; color: var(--text-secondary);">Click to add popular movies you've enjoyed:</p>
+                <div class="popular-movies" id="popularMovies">
+                    <div class="loading-state">
+                        <div class="loading-spinner"></div>
+                        <p>Loading today's popular movies...</p>
+                    </div>
                 </div>
             </div>
         </div>
 
-        <div class="section recommendations" id="recommendationsSection" style="display: none;">
+        <div class="card recommendations-section" id="recommendationsSection" style="display: none;">
             <h2>🌟 Recommended Movies For You</h2>
             <div class="rec-grid" id="recommendationsList"></div>
         </div>
     </div>
 
     <script>
-        // Hardcoded API key for easy use - REPLACE WITH YOUR ACTUAL TMDB API KEY
-        let apiKey = '73da052b6d071d1d9a41cab6d4dc981c'; // Replace this with your real TMDB API key
+        let apiKey = '73da052b6d071d1d9a41cab6d4dc981c';
         let userMovies = [];
         const API_BASE = 'https://api.themoviedb.org/3';
         const IMAGE_BASE = 'https://image.tmdb.org/t/p/w500';
 
-        // Initialize the app when page loads
-        window.addEventListener('load', function() {
+        window.addEventListener('load', () => {
             if (apiKey === 'YOUR_API_KEY_HERE') {
-                document.getElementById('popularMovies').innerHTML = '<div class="error">⚠️ Please replace YOUR_API_KEY_HERE with your actual TMDB API key in the code</div>';
+                document.getElementById('popularMovies').innerHTML = '<div class="alert alert-error">⚠️ Please set your TMDB API key</div>';
             } else {
                 loadPopularMovies();
             }
@@ -397,23 +571,12 @@
             const query = document.getElementById('movieInput').value.trim();
             if (!query) return;
 
-            if (apiKey === 'YOUR_API_KEY_HERE') {
-                alert('Please set up your TMDB API key first!');
-                return;
-            }
-
             try {
                 const response = await fetch(`${API_BASE}/search/movie?api_key=${apiKey}&query=${encodeURIComponent(query)}`);
-                
-                if (!response.ok) {
-                    throw new Error('API request failed');
-                }
-                
                 const data = await response.json();
                 displaySearchResults(data.results.slice(0, 5));
             } catch (error) {
-                console.error('Error searching movies:', error);
-                document.getElementById('searchResults').innerHTML = '<div style="padding: 10px; color: #e53e3e;">Error searching movies. Please check your API key.</div>';
+                document.getElementById('searchResults').innerHTML = '<div class="alert alert-error">Error searching movies.</div>';
                 document.getElementById('searchResults').style.display = 'block';
             }
         }
@@ -422,17 +585,17 @@
             const resultsEl = document.getElementById('searchResults');
             
             if (movies.length === 0) {
-                resultsEl.innerHTML = '<div style="padding: 10px; text-align: center; color: #718096;">No movies found. Try a different search.</div>';
+                resultsEl.innerHTML = '<div style="padding: 1rem; text-center; color: var(--text-muted);">No movies found.</div>';
                 resultsEl.style.display = 'block';
                 return;
             }
 
             resultsEl.innerHTML = movies.map(movie => `
                 <div class="search-result" onclick="addMovieFromSearch(${movie.id})">
-                    <img src="${movie.poster_path ? IMAGE_BASE + movie.poster_path : 'https://via.placeholder.com/40x60?text=No+Image'}" alt="${movie.title}" />
+                    <img src="${movie.poster_path ? IMAGE_BASE + movie.poster_path : 'https://via.placeholder.com/48x72?text=No+Image&bg=1a1a1a&color=71717a'}" alt="${movie.title}" />
                     <div>
-                        <strong>${movie.title}</strong> (${movie.release_date ? movie.release_date.split('-')[0] : 'N/A'})
-                        <div style="font-size: 0.8em; color: #718096;">${movie.overview ? movie.overview.substring(0, 100) + '...' : 'No description available'}</div>
+                        <h4 style="color: var(--text-primary); font-weight: 500; margin-bottom: 0.25rem;">${movie.title} (${movie.release_date ? movie.release_date.split('-')[0] : 'N/A'})</h4>
+                        <p style="color: var(--text-muted); font-size: 0.875rem;">${movie.overview ? movie.overview.substring(0, 100) + '...' : 'No description available'}</p>
                     </div>
                 </div>
             `).join('');
@@ -441,18 +604,8 @@
         }
 
         async function addMovieFromSearch(movieId) {
-            if (apiKey === 'YOUR_API_KEY_HERE') {
-                alert('Please set up your TMDB API key first!');
-                return;
-            }
-
             try {
                 const response = await fetch(`${API_BASE}/movie/${movieId}?api_key=${apiKey}`);
-                
-                if (!response.ok) {
-                    throw new Error('API request failed');
-                }
-                
                 const movie = await response.json();
                 
                 if (!userMovies.find(m => m.id === movie.id)) {
@@ -471,35 +624,22 @@
                     document.getElementById('movieInput').value = '';
                 }
             } catch (error) {
-                console.error('Error adding movie:', error);
                 alert('Error adding movie. Please try again.');
             }
         }
 
         async function loadPopularMovies() {
-            if (apiKey === 'YOUR_API_KEY_HERE') {
-                document.getElementById('popularMovies').innerHTML = '<div class="error">⚠️ Please replace YOUR_API_KEY_HERE with your actual TMDB API key in the code</div>';
-                return;
-            }
-
             try {
                 const response = await fetch(`${API_BASE}/movie/popular?api_key=${apiKey}`);
-                
-                if (!response.ok) {
-                    throw new Error('API request failed');
-                }
-                
                 const data = await response.json();
                 
-                const popularEl = document.getElementById('popularMovies');
-                popularEl.innerHTML = data.results.slice(0, 8).map(movie => `
-                    <button class="btn" onclick="addMovieFromSearch(${movie.id})" style="margin: 5px; padding: 8px 12px; font-size: 0.9em;">
+                document.getElementById('popularMovies').innerHTML = data.results.slice(0, 12).map(movie => `
+                    <button class="popular-movie-btn" onclick="addMovieFromSearch(${movie.id})">
                         ${movie.title}
                     </button>
                 `).join('');
             } catch (error) {
-                console.error('Error loading popular movies:', error);
-                document.getElementById('popularMovies').innerHTML = '<div class="error">❌ Error loading popular movies. Please check your API key.</div>';
+                document.getElementById('popularMovies').innerHTML = '<div class="alert alert-error">Error loading popular movies.</div>';
             }
         }
 
@@ -512,17 +652,22 @@
             const listEl = document.getElementById('movieList');
             
             if (userMovies.length === 0) {
-                listEl.innerHTML = '<div class="no-movies">Add some movies you\'ve enjoyed to get personalized recommendations!</div>';
+                listEl.innerHTML = `
+                    <div class="empty-state">
+                        <div class="empty-state-icon">🎭</div>
+                        <p>Add some movies you've enjoyed to get personalized recommendations!</p>
+                    </div>
+                `;
                 return;
             }
 
             listEl.innerHTML = userMovies.map(movie => `
                 <div class="movie-item">
-                    <img src="${movie.poster || 'https://via.placeholder.com/60x90?text=No+Image'}" alt="${movie.title}" />
+                    <img src="${movie.poster || 'https://via.placeholder.com/60x90?text=No+Image&bg=1a1a1a&color=71717a'}" alt="${movie.title}" />
                     <div class="movie-info">
                         <h3>${movie.title}</h3>
                         <p>${movie.year} • ${movie.genres.join(', ')}</p>
-                        <div class="rating">⭐ ${movie.rating.toFixed(1)}</div>
+                        <div class="movie-rating">⭐ ${movie.rating.toFixed(1)}</div>
                     </div>
                     <button class="remove-btn" onclick="removeMovie(${movie.id})">Remove</button>
                 </div>
@@ -535,243 +680,67 @@
                 return;
             }
 
-            document.getElementById('recommendationsList').innerHTML = '<div class="loading">🤖 Using AI to analyze your movie taste and find perfect matches...</div>';
+            document.getElementById('recommendationsList').innerHTML = `
+                <div class="loading-state" style="grid-column: 1 / -1;">
+                    <div class="loading-spinner"></div>
+                    <p>Using AI to analyze your movie taste and find perfect matches...</p>
+                </div>
+            `;
             document.getElementById('recommendationsSection').style.display = 'block';
 
             try {
-                // Get both algorithmic and AI-enhanced recommendations
-                const algorithmicRecs = await getAlgorithmicRecommendations();
-                const aiEnhancedRecs = await getAIEnhancedRecommendations();
+                const allRecs = [];
                 
-                // Combine and deduplicate
-                const allRecs = [...algorithmicRecs, ...aiEnhancedRecs];
+                // Get recommendations from first 3 user movies
+                for (const movie of userMovies.slice(0, 3)) {
+                    const response = await fetch(`${API_BASE}/movie/${movie.id}/recommendations?api_key=${apiKey}`);
+                    const data = await response.json();
+                    
+                    data.results.forEach(rec => {
+                        if (!userMovies.find(m => m.id === rec.id) && rec.vote_average >= 6.0) {
+                            allRecs.push({
+                                id: rec.id,
+                                title: rec.title,
+                                overview: rec.overview,
+                                poster: rec.poster_path ? IMAGE_BASE + rec.poster_path : null,
+                                rating: rec.vote_average,
+                                year: rec.release_date ? rec.release_date.split('-')[0] : 'N/A',
+                                basedOn: movie.title
+                            });
+                        }
+                    });
+                }
+                
+                // Remove duplicates and get top 6
                 const uniqueRecs = Array.from(new Map(allRecs.map(item => [item.id, item])).values());
-                
-                // Smart scoring that combines multiple factors
-                const scoredRecs = uniqueRecs.map(rec => ({
-                    ...rec,
-                    score: calculateSmartScore(rec)
-                }));
-                
-                // Sort by score and select top recommendations
-                const finalRecs = scoredRecs
-                    .sort((a, b) => b.score - a.score)
-                    .slice(0, 6);
+                const finalRecs = uniqueRecs.sort((a, b) => b.rating - a.rating).slice(0, 6);
                 
                 displayRecommendations(finalRecs);
             } catch (error) {
-                console.error('Error getting recommendations:', error);
-                document.getElementById('recommendationsList').innerHTML = '<div class="error">Error getting recommendations. Please try again.</div>';
+                document.getElementById('recommendationsList').innerHTML = '<div class="alert alert-error">Error getting recommendations.</div>';
             }
-        }
-
-        async function getAlgorithmicRecommendations() {
-            const allRecommendations = [];
-            
-            // Enhanced algorithmic approach
-            for (const movie of userMovies.slice(0, 4)) {
-                // Get movie details for better analysis
-                const movieDetails = await fetch(`${API_BASE}/movie/${movie.id}?api_key=${apiKey}&append_to_response=credits,keywords`);
-                const movieData = await movieDetails.json();
-                
-                // Get recommendations and similar movies
-                const [recResponse, simResponse] = await Promise.all([
-                    fetch(`${API_BASE}/movie/${movie.id}/recommendations?api_key=${apiKey}`),
-                    fetch(`${API_BASE}/movie/${movie.id}/similar?api_key=${apiKey}`)
-                ]);
-                
-                const recData = await recResponse.json();
-                const simData = await simResponse.json();
-                
-                const combinedResults = [...recData.results, ...simData.results];
-                
-                combinedResults.forEach(rec => {
-                    if (!userMovies.find(m => m.id === rec.id) && 
-                        rec.vote_average >= 6.0 && 
-                        rec.popularity > 10 &&
-                        rec.release_date) {
-                        
-                        allRecommendations.push({
-                            id: rec.id,
-                            title: rec.title,
-                            overview: rec.overview,
-                            poster: rec.poster_path ? IMAGE_BASE + rec.poster_path : null,
-                            rating: rec.vote_average,
-                            year: rec.release_date ? rec.release_date.split('-')[0] : 'N/A',
-                            popularity: rec.popularity,
-                            basedOn: movie.title,
-                            source: 'algorithmic',
-                            genres: rec.genre_ids || [],
-                            releaseDate: rec.release_date
-                        });
-                    }
-                });
-            }
-            
-            return allRecommendations;
-        }
-
-        async function getAIEnhancedRecommendations() {
-            // Simulate AI-enhanced recommendations using advanced analysis
-            const aiRecs = [];
-            
-            // Analyze user preferences
-            const userProfile = analyzeUserPreferences();
-            
-            // Get curated recommendations based on user profile
-            const curatedRecs = await getCuratedRecommendations(userProfile);
-            
-            return curatedRecs;
-        }
-
-        function analyzeUserPreferences() {
-            // Advanced user preference analysis
-            const genreCounts = {};
-            const decadeCounts = {};
-            const ratingPreference = [];
-            const directors = [];
-            
-            userMovies.forEach(movie => {
-                // Genre analysis
-                movie.genres.forEach(genre => {
-                    genreCounts[genre] = (genreCounts[genre] || 0) + 1;
-                });
-                
-                // Decade analysis
-                const decade = Math.floor(parseInt(movie.year) / 10) * 10;
-                decadeCounts[decade] = (decadeCounts[decade] || 0) + 1;
-                
-                // Rating preference
-                ratingPreference.push(movie.rating);
-            });
-            
-            const avgRating = ratingPreference.reduce((a, b) => a + b, 0) / ratingPreference.length;
-            const preferredGenres = Object.entries(genreCounts)
-                .sort((a, b) => b[1] - a[1])
-                .slice(0, 3)
-                .map(([genre]) => genre);
-            
-            return {
-                preferredGenres,
-                avgRatingPreference: avgRating,
-                preferredDecades: Object.keys(decadeCounts),
-                diversityScore: Object.keys(genreCounts).length / userMovies.length
-            };
-        }
-
-        async function getCuratedRecommendations(userProfile) {
-            const curated = [];
-            
-            // Get highly rated movies from preferred genres
-            for (const genre of userProfile.preferredGenres.slice(0, 2)) {
-                const genreMap = {
-                    'Action': 28, 'Adventure': 12, 'Animation': 16, 'Comedy': 35,
-                    'Crime': 80, 'Documentary': 99, 'Drama': 18, 'Family': 10751,
-                    'Fantasy': 14, 'History': 36, 'Horror': 27, 'Music': 10402,
-                    'Mystery': 9648, 'Romance': 10749, 'Science Fiction': 878,
-                    'Thriller': 53, 'War': 10752, 'Western': 37
-                };
-                
-                const genreId = genreMap[genre];
-                if (genreId) {
-                    try {
-                        const response = await fetch(`${API_BASE}/discover/movie?api_key=${apiKey}&with_genres=${genreId}&sort_by=vote_average.desc&vote_count.gte=1000&vote_average.gte=${Math.max(6.5, userProfile.avgRatingPreference - 1)}&page=1`);
-                        const data = await response.json();
-                        
-                        data.results.slice(0, 3).forEach(movie => {
-                            if (!userMovies.find(m => m.id === movie.id)) {
-                                curated.push({
-                                    id: movie.id,
-                                    title: movie.title,
-                                    overview: movie.overview,
-                                    poster: movie.poster_path ? IMAGE_BASE + movie.poster_path : null,
-                                    rating: movie.vote_average,
-                                    year: movie.release_date ? movie.release_date.split('-')[0] : 'N/A',
-                                    popularity: movie.popularity,
-                                    basedOn: `your preference for ${genre} films`,
-                                    source: 'ai-curated',
-                                    confidence: calculateConfidence(movie, userProfile)
-                                });
-                            }
-                        });
-                    } catch (error) {
-                        console.error('Error getting curated recommendations:', error);
-                    }
-                }
-            }
-            
-            return curated;
-        }
-
-        function calculateSmartScore(rec) {
-            let score = 0;
-            
-            // Base score from rating (0-10)
-            score += rec.rating * 10;
-            
-            // Popularity boost (logarithmic to prevent skewing)
-            score += Math.log(rec.popularity + 1) * 5;
-            
-            // Recency factor (newer movies get slight boost)
-            const currentYear = new Date().getFullYear();
-            const movieYear = parseInt(rec.year);
-            if (movieYear >= currentYear - 5) {
-                score += 10; // Recent movies
-            } else if (movieYear >= currentYear - 15) {
-                score += 5; // Somewhat recent
-            }
-            
-            // AI confidence boost
-            if (rec.confidence) {
-                score += rec.confidence * 20;
-            }
-            
-            // Source reliability
-            if (rec.source === 'ai-curated') {
-                score += 15;
-            } else if (rec.source === 'algorithmic') {
-                score += 10;
-            }
-            
-            return score;
-        }
-
-        function calculateConfidence(movie, userProfile) {
-            let confidence = 0.5; // Base confidence
-            
-            // Higher confidence for movies matching user's rating preference
-            if (Math.abs(movie.vote_average - userProfile.avgRatingPreference) < 1) {
-                confidence += 0.3;
-            }
-            
-            // Boost for high-quality movies
-            if (movie.vote_average >= 8.0) {
-                confidence += 0.2;
-            }
-            
-            return Math.min(confidence, 1.0);
         }
 
         function displayRecommendations(recs) {
             const list = document.getElementById('recommendationsList');
             
             if (recs.length === 0) {
-                list.innerHTML = '<div class="no-movies">No recommendations found. Try adding more movies!</div>';
+                list.innerHTML = '<div class="empty-state"><div class="empty-state-icon">🎭</div><p>No recommendations found. Try adding more movies!</p></div>';
                 return;
             }
             
             list.innerHTML = recs.map(rec => `
                 <div class="rec-card">
-                    <img src="${rec.poster || 'https://via.placeholder.com/300x200?text=No+Image'}" alt="${rec.title}" />
+                    <div class="rec-card-image">
+                        <img src="${rec.poster || 'https://via.placeholder.com/320x240?text=No+Image&bg=1a1a1a&color=71717a'}" alt="${rec.title}" />
+                    </div>
                     <div class="rec-card-content">
                         <h3>${rec.title} (${rec.year})</h3>
                         <p>${rec.overview ? rec.overview.substring(0, 150) + '...' : 'No description available'}</p>
-                        <div style="margin-bottom: 10px;">
-                            <span class="rating">⭐ ${rec.rating.toFixed(1)}</span>
+                        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                            <div class="movie-rating">⭐ ${rec.rating.toFixed(1)}</div>
                         </div>
-                        <div style="font-size: 0.8em; color: #667eea;">
-                            Recommended because you liked "${rec.basedOn}"
-                        </div>
+                        <div class="rec-reason">Because you liked "${rec.basedOn}"</div>
                     </div>
                 </div>
             `).join('');
@@ -779,16 +748,13 @@
             document.getElementById('recommendationsSection').scrollIntoView({ behavior: 'smooth' });
         }
 
-        // Allow Enter key to search movies
-        document.getElementById('movieInput').addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                searchMovies();
-            }
+        // Event listeners
+        document.getElementById('movieInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') searchMovies();
         });
 
-        // Hide search results when clicking outside
-        document.addEventListener('click', function(e) {
-            if (!e.target.closest('.movie-input') && !e.target.closest('.search-results')) {
+        document.addEventListener('click', (e) => {
+            if (!e.target.closest('.search-container')) {
                 document.getElementById('searchResults').style.display = 'none';
             }
         });
