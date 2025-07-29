@@ -373,7 +373,7 @@
 
         .rec-grid {
             display: grid;
-            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
             gap: 1.5rem;
             margin-top: 2rem;
         }
@@ -683,7 +683,7 @@
             document.getElementById('recommendationsList').innerHTML = `
                 <div class="loading-state" style="grid-column: 1 / -1;">
                     <div class="loading-spinner"></div>
-                    <p>Using AI to analyze your movie taste and find perfect matches...</p>
+                    <p>Analyzing ${userMovies.length} movies to find your perfect matches...</p>
                 </div>
             `;
             document.getElementById('recommendationsSection').style.display = 'block';
@@ -691,13 +691,28 @@
             try {
                 const allRecs = [];
                 
-                // Get recommendations from first 3 user movies
-                for (const movie of userMovies.slice(0, 3)) {
-                    const response = await fetch(`${API_BASE}/movie/${movie.id}/recommendations?api_key=${apiKey}`);
-                    const data = await response.json();
+                // Use up to 8 seed movies (or all if user has fewer)
+                const seedMovies = userMovies.slice(0, Math.min(8, userMovies.length));
+                
+                // Get both recommendations and similar movies for better variety
+                for (const movie of seedMovies) {
+                    const [recResponse, simResponse] = await Promise.all([
+                        fetch(`${API_BASE}/movie/${movie.id}/recommendations?api_key=${apiKey}&page=1`),
+                        fetch(`${API_BASE}/movie/${movie.id}/similar?api_key=${apiKey}&page=1`)
+                    ]);
                     
-                    data.results.forEach(rec => {
-                        if (!userMovies.find(m => m.id === rec.id) && rec.vote_average >= 6.0) {
+                    const recData = await recResponse.json();
+                    const simData = await simResponse.json();
+                    
+                    // Combine recommendations and similar movies
+                    const combinedResults = [...recData.results, ...simData.results];
+                    
+                    combinedResults.forEach(rec => {
+                        if (!userMovies.find(m => m.id === rec.id) && 
+                            rec.vote_average >= 5.5 && 
+                            rec.popularity > 5 &&
+                            rec.release_date) {
+                            
                             allRecs.push({
                                 id: rec.id,
                                 title: rec.title,
@@ -705,20 +720,68 @@
                                 poster: rec.poster_path ? IMAGE_BASE + rec.poster_path : null,
                                 rating: rec.vote_average,
                                 year: rec.release_date ? rec.release_date.split('-')[0] : 'N/A',
-                                basedOn: movie.title
+                                popularity: rec.popularity,
+                                basedOn: movie.title,
+                                seedRating: movie.rating, // Store the seed movie's rating for scoring
+                                releaseDate: rec.release_date
                             });
                         }
                     });
                 }
                 
-                // Remove duplicates and get top 6
+                // Remove duplicates
                 const uniqueRecs = Array.from(new Map(allRecs.map(item => [item.id, item])).values());
-                const finalRecs = uniqueRecs.sort((a, b) => b.rating - a.rating).slice(0, 6);
+                
+                // Enhanced scoring algorithm
+                const scoredRecs = uniqueRecs.map(rec => ({
+                    ...rec,
+                    score: calculateRecommendationScore(rec)
+                }));
+                
+                // Sort by score and get top 15 recommendations
+                const finalRecs = scoredRecs
+                    .sort((a, b) => b.score - a.score)
+                    .slice(0, 15);
                 
                 displayRecommendations(finalRecs);
             } catch (error) {
                 document.getElementById('recommendationsList').innerHTML = '<div class="alert alert-error">Error getting recommendations.</div>';
             }
+        }
+
+        function calculateRecommendationScore(rec) {
+            let score = 0;
+            
+            // Base score from movie rating (0-100 points)
+            score += rec.rating * 10;
+            
+            // Popularity factor (logarithmic to prevent extremely popular movies from dominating)
+            score += Math.log(rec.popularity + 1) * 3;
+            
+            // Recency bonus (newer movies get slight preference)
+            const currentYear = new Date().getFullYear();
+            const movieYear = parseInt(rec.year);
+            if (movieYear >= currentYear - 3) {
+                score += 15; // Very recent
+            } else if (movieYear >= currentYear - 8) {
+                score += 10; // Recent
+            } else if (movieYear >= currentYear - 15) {
+                score += 5; // Somewhat recent
+            }
+            
+            // Quality threshold bonus
+            if (rec.rating >= 7.5) {
+                score += 20; // High quality
+            } else if (rec.rating >= 7.0) {
+                score += 10; // Good quality
+            }
+            
+            // Seed movie quality influence (if user liked high-rated movies, prefer high-rated recs)
+            if (rec.seedRating >= 8.0 && rec.rating >= 7.0) {
+                score += 15; // User likes quality, recommend quality
+            }
+            
+            return score;
         }
 
         function displayRecommendations(recs) {
